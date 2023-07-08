@@ -49,6 +49,7 @@ menu = """
 
 >Debug
 >debug,fixError,networkFixed,craftNewMoney,writeTol,makeRandom,logger.
+开源在 https://github.com/NotFlyLoongQaQ/233bot
 """
 gifsList = ['qaq', 'qwq', 'uwu', 'awa', 'quq', 'uau']
 adminList = ['nHNvSB', '0UTOss', '9aHe9H', 'wrutvG']
