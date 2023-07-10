@@ -586,7 +586,8 @@ def message_got(chat, message, sender, trip):
                        message)
         chat.send_message('已提交到等待队列.')
     if '@23' in message:
-      chat.send_message('@awa' * 23)
+      atd = '@' + sender
+      chat.send_message(atd * 23)
 
 
 time.sleep(2.3)
