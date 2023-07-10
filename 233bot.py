@@ -463,7 +463,7 @@ def message_got(chat, message, sender, trip):
     chat.send_message("✔️ 获取成功. \n > " + str(adminList))
   if '233reboot' == message:
     if trip in adminList:
-      restart_program()
+      fix.restart_program()
     else:
       chat.send_message('❌ 权限不足.')
   if '233renick' == message:
