@@ -17,8 +17,64 @@ import hackchat
 import urllib.request
 # 定义常用函数以及常量,变量
 
+# -------- 模块/类 --------
+class systemError:
+  def __init__(self,errorInfo=''):
+    self.errorInfo = errorInfo
+  def checkNetwork():
+    """
+    网络诊断.
+    尽量尝试修复网络,包括DNS,重新DHCP请求ip等.
+    """
+    code = os.system('ping -c 2 1.1.1.1')  # 测试ipv4以及网络连通性
+    if code == 0:
+      pass
+    else:
+      os.system('dhclient')
+    os.system('service network restart')  # 重启网络服务
+  def restart_program():
+    python = sys.executable #获取当前执行python 
+    os.execl(python, python, *sys.argv)  #执行命令
+
+  def logger(self, info, level, quite) -> bool:
+    """
+      错误处理.
+      Level: 等级. 0:致命错误 1:严重错误 2:类型错误 3:网络错误 4:Debug
+      Info: 具体错误信息
+      Quite: 是否静默模式,如为1仅输出错误日志不对错误进行处理,0将对错误进行尽量的处理.
+      故障分计算:
+      故障分=基础分*持续时长(小时)
+      持续时长：问题反馈时间 到 问题修复时间(或问题影响已停止)
+    """
+    fix = systemError()
+    unixtime = str(int(time.time()))
+    unixtime = '[Time=' + unixtime + ']'
+    # 判断等级
+    if level == 0:
+      print(unixtime + '[FATAL][P0] ' + info)
+      if quite == 1:
+        print('[SYS][自动修复] 将尝试重新启动该程序.')
+        fix.restart_program()
+      else:
+        sys.exit(-1)
+    elif level == 1:
+      print(unixtime + '[Error][P1] ' + info)
+    elif level == 2:
+      print(unixtime + '[TypeError][P2] ' + info)
+      if quite == 1:
+        print('[SYS][自动修复] 将尝试重新启动该程序.')
+        fix.restart_program()
+    elif level == 3:
+      print(unixtime + '[NetworkError][P2] ' + info)
+      if quite == 1:
+        # 网络诊断
+        fix.checkNetwork()
+    elif level == 4:
+      print(unixtime + '[Debug] ' + info)
+
 # -------- 常量区 --------
 
+fix         = systemError()
 colors      = ['FFB6C1','FFF0F5','FFFFFF','87CEFA','87CEFA']
 random_salt = 233333
 nickname = '233bot_alpha'
@@ -178,11 +234,11 @@ def fixError(errorType, line, x, y):
     if x != None and y != None:
       # 检查x与y的 Type 是否相同.
       if type(x) != type(y):
-        logger('类型错误在 ' + line + ' Line上.', 1, 0)
+        fix.logger('类型错误在 ' + line + ' Line上.', 1, 0)
       else:
         pass
     if x == None and y == None:
-      logger('在 ' + line + ' Line上有一个变量的值为空,请尝试进行热表达式取值/热重载/Debugger.')
+      fix.logger('在 ' + line + ' Line上有一个变量的值为空,请尝试进行热表达式取值/热重载/Debugger.')
     if errorType == "OverflowError":
       pass
 
@@ -200,7 +256,7 @@ def craftNewMoney(text, named=random.randint(1000, 9999)):
       name = random
       i += 1
   if i >= 8999:
-    logger('内存空间已满,将清空内存空间.', 1, 0)
+    fix.logger('内存空间已满,将清空内存空间.', 1, 0)
     del money
     money = {}
   money[str(named)] = text
@@ -233,65 +289,16 @@ def makeRandom(min, max, mode, salt=random_salt) -> float:
     return t
 
 
-def checkNetwork():
-  """
-    网络诊断.
-    尽量尝试修复网络,包括DNS,重新DHCP请求ip等.
-    """
-  code = os.system('ping -c 2 1.1.1.1')  # 测试ipv4以及网络连通性
-  if code == 0:
-    pass
-  else:
-    os.system('dhclient')
-  os.system('service network restart')  # 重启网络服务
 
 
-def logger(info, level, quite) -> bool:
-  """
-    错误处理.
-    Level: 等级. 0:致命错误 1:严重错误 2:类型错误 3:网络错误 4:Debug
-    Info: 具体错误信息
-    Quite: 是否静默模式,如为1仅输出错误日志不对错误进行处理,0将对错误进行尽量的处理.
-    故障分计算:
-    故障分=基础分*持续时长(小时)
-    持续时长：问题反馈时间 到 问题修复时间(或问题影响已停止)
-    """
-  unixtime = str(int(time.time()))
-  unixtime = '[Time=' + unixtime + ']'
-  # 判断等级
-  if level == 0:
-    print(unixtime + '[FATAL][P0] ' + info)
-    if quite == 1:
-      print('[SYS][自动修复] 将尝试重新启动该程序.')
-      restart_program()
-    else:
-      sys.exit(-1)
-  elif level == 1:
-    print(unixtime + '[Error][P1] ' + info)
-  elif level == 2:
-    print(unixtime + '[TypeError][P2] ' + info)
-    if quite == 1:
-      print('[SYS][自动修复] 将尝试重新启动该程序.')
-      restart_program()
-  elif level == 3:
-    print(unixtime + '[NetworkError][P2] ' + info)
-    if quite == 1:
-      # 网络诊断
-      checkNetwork()
-  elif level == 4:
-    print(unixtime + '[Debug] ' + info)
+
 
 
 def join(chat, nick, trip):
   chat.send_message("你好呀!" + nick)
 
 
-def restart_program():
-  """
-    当遇到 Runtime Error 并且无力修复时,该函数会尝试重启程序.
-    """
-  python = sys.executable
-  os.execl(python, python, *sys.argv)
+
 
 
 def python_terminal():
@@ -321,10 +328,10 @@ def python_terminal():
 
 def runner(nickname2="233bot", channel="lounge"):
   named = make_login_username(nickname2, password)
-  logger('Start Login. post to hackchat named:' + named + ' On ' + channel, 4,
+  fix.logger('Start Login. post to hackchat named:' + named + ' On ' + channel, 4,
          0)
   chat = hackchat.HackChat(named, channel)
-  logger('Chat craft over. post to hackchat named:' + named + ' On ' + channel,
+  fix.logger('Chat craft over. post to hackchat named:' + named + ' On ' + channel,
          4, 0)
   chat.on_join += [join]
   chat.on_message += [message_got]
@@ -339,7 +346,7 @@ def runner(nickname2="233bot", channel="lounge"):
 
 def make_login_username(nickname, password):
   return nickname + '#' + password
-
+  
 
 def newBot():
   named = input('nickname:')
@@ -347,10 +354,11 @@ def newBot():
   runner(named, cl2)
 
 
+
 # Code Start
 # 开始初始化
 
-logger("开始运行", 4, 0)
+fix.logger("开始运行", 4, 0)
 random_salt += int(time.time())
 
 
@@ -378,7 +386,7 @@ def message_got(chat, message, sender, trip):
     chat.send_message("已经在 Debug窗口 生成了一个pin,请注意查收.")
     id = uuid.uuid1()
     id = str(id)
-    logger(id, 4, 0)
+    fix.logger(id, 4, 0)
     admins.append(id)
   if "afk" == msg:
     chat.send_message("已经afk啦!")
@@ -419,10 +427,11 @@ def message_got(chat, message, sender, trip):
         chat.send_message(
           '✔️ 模块加载成功. \n Info: Named: USBot++ 单机版控制台 \n Version 0.1.0')
     except:
-      logger(message, 4, 0)
+      fix.logger(message, 4, 0)
       chat.send_message(
         '基本错误:加载失败.可能的原因: \n - 模块内语法错误. \n - 不存在的模块. \n233Bot 错误处理模块. 已将该 message 加入日志.'
       )
+  """
   if 'chatgpt' in msg:
     prompt = message
     sc = 'https://api.bing.com/qsonhs.aspx?type=cb&q=' + message[7:]
@@ -439,7 +448,8 @@ def message_got(chat, message, sender, trip):
     logger("Maked Prompt:" + prompt, 4, 0)
     data = {'prompt': prompt}
     x = requests.post(url, data=data, headers=headers)
-    chat.send_message(x.text)
+    chat.send_message(x.text)"""
+  
   # 管理类
   if '233adminAdd' in message:
     if trip in adminList:
@@ -472,7 +482,7 @@ def message_got(chat, message, sender, trip):
             chata.send_message('/w ' + nickname + '>>>>>>>>>>>>>>>>>>>>>>')
 
         _thread.start_new_thread(fuck, (message[7:], chat))
-        logger('尝试踢出:' + message[7:], 4, 1)
+        fix.logger('尝试踢出:' + message[7:], 4, 1)
 
       except:
         chat.send_message('⚠️ 致命错误 Code 233.000 未知错误.')
@@ -502,6 +512,7 @@ def message_got(chat, message, sender, trip):
   if '233black' == message:
     chat.send_message(str(random.choice(black)))
   # AI类
+  """
   if '233' in message:
     prompt = message
     url = 'http://ai.zhuoluyun.com/backend/conversation.php'
@@ -515,7 +526,7 @@ def message_got(chat, message, sender, trip):
     logger("Maked Prompt:" + prompt, 4, 0)
     data = {'prompt': prompt}
     x = requests.post(url, data=data, headers=headers)
-    chat.send_message(x.text)
+    chat.send_message(x.text)"""
   #USbot Plus类
   if 'checkProxy' == message:
     try:
@@ -533,12 +544,6 @@ def message_got(chat, message, sender, trip):
         chat.send_message('❌ 模块加载失败,请尝试重载 233bot 核心.')
     else:
       chat.send_message('❌ 权限不足.')
-  """
-  >| Stellaris |
-  >checkProxy(重载代理池) startBomb 轨道轰炸(启用 USBot Plus.) 
-  >ban (封禁) fuckThis (关闭边境) lookStarList 查看星海共同体聊天室列表(查看受信任的频道)
-  >lookStarPeople 查看星海共同体成员列表(查看受信任的人) peac(外交羞辱)
-  """
   if 'peac' == message:
     fuckList = [
       '你就像一个未开化的猿猴.', '请原谅我调暗显示器的亮度，我实在忍受不了这么恶心的脸。',
