@@ -11,8 +11,6 @@ import time
 import uuid
 import numpy
 import random
-import tkinter
-import webapp
 import _thread
 import requests
 import hackchat
@@ -21,6 +19,7 @@ import urllib.request
 
 # -------- 常量区 --------
 
+colors      = ['FFB6C1','FFF0F5','FFFFFF','87CEFA','87CEFA']
 random_salt = 233333
 nickname = '233bot_alpha'
 password = '7713640'
@@ -160,6 +159,12 @@ def division(num1, num2):
 
 # -------- 变量/函数区 --------
 
+
+def getRandomColor() -> str:
+  min   = 0
+  max   = len(colors) - 1
+  index = random.randint(min,max)
+  return colors[index]
 
 def fixError(errorType, line, x, y):
   """
@@ -353,7 +358,8 @@ def message_got(chat, message, sender, trip):
   if sender == nickname or '233bot' in sender or 'awa_ya' in sender:
     return 1
   msg = message.lower()
-
+  thisColor = getRandomColor
+  chat.send_message('/color ' + thisColor)
   if "r" == msg or "rand" == msg:
     chat.send_message(str(makeRandom(10, 1000, 1, random_salt)))
   if "menu" == msg or "菜单" == msg:
@@ -578,15 +584,7 @@ def message_got(chat, message, sender, trip):
       chat.send_message('@awa' * 23)
 
 
-top = tkinter.Tk()
 time.sleep(2.3)
 
 _thread.start_new_thread(runner, ())
-cmd = tkinter.Button(top, text="Terminal", command=python_terminal)
-rb = tkinter.Button(top, text="Reboot", command=restart_program)
-cl = tkinter.Button(top, text="newBot", command=newBot)
-cmd.pack()
-rb.pack()
-webapp.keep_alive()
-cl.pack()
-top.mainloop()
+python_terminal()
